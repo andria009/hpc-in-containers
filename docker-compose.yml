@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  grid1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: grid1
+    hostname: grid1
+    ports:
+      - "2222:22"
+    volumes:
+      - ./data:/home/grid/data
+    networks:
+      mynet:
+        ipv4_address: 172.20.0.2
+
+  grid2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: grid2
+    hostname: grid2
+    ports:
+      - "2223:22"
+    volumes:
+      - ./data:/home/grid/data
+    networks:
+      mynet:
+        ipv4_address: 172.20.0.3
+
+networks:
+  mynet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
