@@ -9,6 +9,7 @@ services:
     hostname: grid1
     ports:
       - "2222:22"
+      - "8888:8888"
     volumes:
       - ./data:/home/grid/data
     networks:
@@ -23,6 +24,7 @@ services:
     hostname: grid2
     ports:
       - "2223:22"
+      - "8889:8888"
     volumes:
       - ./data:/home/grid/data
     networks:
