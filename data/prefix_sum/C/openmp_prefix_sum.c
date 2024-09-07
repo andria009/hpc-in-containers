@@ -3,17 +3,17 @@
 #include <time.h>
 #include <omp.h>
 
-// Fungsi untuk menghitung Prefix Sum secara paralel
+// Function to calculate Prefix Sum in parallel
 void prefix_sum_parallel(int arr[], long prefix[], int n) {
     int i;
 
-    // Tahap 1: Menghitung prefix sum lokal di setiap thread
+    // Stage 1: Calculate local prefix sum in each thread
     #pragma omp parallel for
     for (i = 0; i < n; i++) {
         prefix[i] = arr[i];
     }
 
-    // Tahap 2: Menambahkan elemen prefix sum dari elemen sebelumnya
+    // Stage 2: Add prefix sum elements from previous elements
     for (i = 1; i < n; i++) {
         #pragma omp parallel for
         for (int j = i; j < n; j++) {
@@ -23,40 +23,40 @@ void prefix_sum_parallel(int arr[], long prefix[], int n) {
 }
 
 int main(int argc, char *argv[]) {
-    // Mengecek apakah argumen ukuran array diberikan
+    // Check if the array size argument is provided
     if (argc != 2) {
         printf("Usage: %s <size_of_array>\n", argv[0]);
         return -1;
     }
 
-    // Mengambil ukuran array dari argumen eksekusi
+    // Get the array size from execution arguments
     int n = atoi(argv[1]);
 
-    // Validasi input
+    // Validate input
     if (n <= 0) {
-        printf("Ukuran array harus positif.\n");
+        printf("Array size must be positive.\n");
         return -1;
     }
 
     int arr[n];
     long prefix[n];
 
-    // Inisialisasi random number generator
+    // Initialize random number generator
     srand(42);
 
-    // Mengisi array dengan bilangan acak dan menampilkannya
-    // printf("Array acak:\n");
+    // Fill the array with random numbers and display it
+    // printf("Random array:\n");
     for (int i = 0; i < n; i++) {
-        arr[i] = rand() % 100; // Menghasilkan bilangan acak antara 0 hingga 99
+        arr[i] = rand() % 100; // Generate random numbers between 0 and 99
     //     printf("%d ", arr[i]);
     }
     // printf("\n");
 
-    // Menghitung prefix sum secara paralel
+    // Calculate prefix sum in parallel
     prefix_sum_parallel(arr, prefix, n);
 
-    // Menampilkan hasil prefix sum
-    printf("Prefix Sum [10 elemen terakhir]:\n");
+    // Display the prefix sum result
+    printf("Prefix Sum [last 10 elements]:\n");
     for (int i = n-10; i < n; i++) {
         printf("%d ", prefix[i]);
     }
@@ -64,4 +64,3 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-

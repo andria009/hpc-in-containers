@@ -1,39 +1,39 @@
 import random
 import sys
 
-# Fungsi untuk menghitung prefix sum
+# Function to calculate prefix sum
 def prefix_sum(arr):
     prefix = [0] * len(arr)
-    prefix[0] = arr[0]  # Elemen pertama
+    prefix[0] = arr[0]  # First element
 
-    # Menghitung prefix sum
+    # Calculate prefix sum
     for i in range(1, len(arr)):
         prefix[i] = prefix[i - 1] + arr[i]
 
     return prefix
 
 def main():
-    # Mengecek apakah argumen ukuran array diberikan
+    # Check if the array size argument is provided
     if len(sys.argv) != 2:
         print("Usage: python prefix_sum.py <size_of_array>")
         return
 
     try:
-        # Mendapatkan ukuran array dari argumen input
+        # Get array size from input argument
         n = int(sys.argv[1])
     except ValueError:
-        print("Ukuran array harus angka.")
+        print("Array size must be a number.")
         return
 
     if n <= 0:
-        print("Ukuran array harus positif.")
+        print("Array size must be positive.")
         return
 
-    # Menghasilkan array acak
+    # Generate a random array
     arr = [random.randint(0, 99) for _ in range(n)]
-    print("Array acak:", arr)
+    print("Random array:", arr)
 
-    # Menghitung prefix sum
+    # Calculate prefix sum
     result = prefix_sum(arr)
     print("Prefix Sum:", result)
 
