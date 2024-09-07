@@ -3,8 +3,10 @@ FROM almalinux:latest
 
 # Install necessary packages including OpenMPI, SSH, and development tools
 RUN yum -y update && \
-    yum -y install openssh-server openssh-clients sudo openmpi openmpi-devel \
-    python3 python3-pip wget gcc gcc-c++ make cmake git && \
+    yum -y install openssh-server openssh-clients sudo wget && \
+    yum -y install openmpi openmpi-devel && \
+    yum -y install java-17-openjdk-devel && \
+    yum -y install python3 python3-pip wget gcc gcc-c++ make cmake git && \
     yum clean all
 
 # Install Miniconda
@@ -41,7 +43,9 @@ RUN echo "export PATH=/usr/lib64/openmpi/bin:\$PATH" >> /home/grid/.bashrc && \
     echo "export OMPI_MCA_pml=ob1" >> /home/grid/.bashrc && \
     echo "export OMPI_MCA_btl=tcp,self,vader" >> /home/grid/.bashrc && \
     echo "export OMPI_MCA_btl_base_exclude=openib,uct,psm,psm2,ofi" >> /home/grid/.bashrc && \
-    echo "export MANPATH=/usr/share/man/openmpi-x86_64:\$MANPATH" >> /home/grid/.bashrc
+    echo "export MANPATH=/usr/share/man/openmpi-x86_64:\$MANPATH" >> /home/grid/.bashrc && \
+    echo "export JAVA_HOME=/usr/bin/java" >> /home/grid/.bashrc && \
+    echo "export CLASSPATH=.:/home/grid/data/CLASSPATH"
 
 # Install Jupyter Lab and xeus-cling
 RUN conda install -y -c conda-forge jupyterlab xeus-cling
