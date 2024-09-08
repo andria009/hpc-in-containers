@@ -1,41 +1,50 @@
-import random
 import sys
+import random
 
-# Function to calculate prefix sum
 def prefix_sum(arr):
     prefix = [0] * len(arr)
-    prefix[0] = arr[0]  # First element
-
-    # Calculate prefix sum
+    prefix[0] = arr[0]  # Initialize the first element of the prefix sum
+    # Calculate prefix sum for each element
     for i in range(1, len(arr)):
-        prefix[i] = prefix[i - 1] + arr[i]
-
+        prefix[i] = prefix[i - 1] + arr[i]  # Each element is the cumulative sum of the previous elements
     return prefix
 
 def main():
     # Check if the array size argument is provided
     if len(sys.argv) != 2:
-        print("Usage: python prefix_sum.py <size_of_array>")
-        return
+        print(f"Usage: python {sys.argv[0]} <size_of_array>")
+        return -1
 
+    # Get the array size from execution arguments
     try:
-        # Get array size from input argument
         n = int(sys.argv[1])
     except ValueError:
-        print("Array size must be a number.")
-        return
+        print("Array size must be an integer.")
+        return -1
 
+    # Validate input
     if n <= 0:
         print("Array size must be positive.")
-        return
+        return -1
 
-    # Generate a random array
+    # Initialize random number generator
+    random.seed(42)
+
+    # Fill the array with random numbers between 0 and 99
     arr = [random.randint(0, 99) for _ in range(n)]
-    print("Random array:", arr)
+
+    # Display the last 10 elements of the random array
+    print("Random array [last 10 elements]:")
+    print(*arr[-10:])
 
     # Calculate prefix sum
-    result = prefix_sum(arr)
-    print("Prefix Sum:", result)
+    prefix = prefix_sum(arr)
+
+    # Display the prefix sum result (last 10 elements)
+    print("Prefix Sum [last 10 elements]:")
+    print(*prefix[-10:])
+
+    return 0
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

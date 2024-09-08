@@ -1,52 +1,35 @@
-import random
 import sys
+import random
 import multiprocessing as mp
 
-# Function to calculate prefix sum in each chunk (section)
-def prefix_sum_chunk(start, end, arr, prefix, lock):
-    for i in range(start, end):
-        with lock:
-            if i == 0:
-                prefix[i] = arr[i]  # First element
-            else:
-                prefix[i] = prefix[i - 1] + arr[i]
+def compute_partial_prefix_sum(arr, start_idx, result):
+    """
+    Function to compute the prefix sum for a subarray.
+    The result is stored in the shared list `result`.
+    """
+    prefix_sum = arr[0]
+    result[start_idx] = prefix_sum
 
-def main():
-    # Check if the array size argument is provided
-    if len(sys.argv) != 2:
-        print("Usage: python prefix_sum_parallel.py <size_of_array>")
-        return
+    for i in range(1, len(arr)):
+        prefix_sum += arr[i]
+        result[start_idx + i] = prefix_sum
 
-    try:
-        # Get array size from input argument
-        n = int(sys.argv[1])
-    except ValueError:
-        print("Array size must be a number.")
-        return
+def multiprocessing_prefix_sum(arr):
+    n = len(arr)
+    num_workers = mp.cpu_count()  # Number of processes to use
+    chunk_size = (n + num_workers - 1) // num_workers  # Divide the array into chunks
 
-    if n <= 0:
-        print("Array size must be positive.")
-        return
+    # Create a shared memory array to store the result
+    manager = mp.Manager()
+    result = manager.list([0] * n)
 
-    # Generate a random array
-    arr = [random.randint(0, 99) for _ in range(n)]
-    print("Random array:", arr)
-
-    # Create shared memory for the prefix array
-    prefix = mp.Array('i', n)  # 'i' = integer
-    lock = mp.Lock()  # Lock for synchronization
-
-    # Determine the number of processes to use
-    num_processes = mp.cpu_count()  # Number of cores on the CPU
-    chunk_size = n // num_processes
-
-    # Create and start processes
+    # Create processes for each chunk
     processes = []
-    for i in range(num_processes):
-        start = i * chunk_size
-        # If this is the last process, take the remaining elements
-        end = n if i == num_processes - 1 else (i + 1) * chunk_size
-        p = mp.Process(target=prefix_sum_chunk, args=(start, end, arr, prefix, lock))
+    for i in range(num_workers):
+        start_idx = i * chunk_size
+        end_idx = min((i + 1) * chunk_size, n)
+        chunk = arr[start_idx:end_idx]
+        p = mp.Process(target=compute_partial_prefix_sum, args=(chunk, start_idx, result))
         processes.append(p)
         p.start()
 
@@ -54,8 +37,52 @@ def main():
     for p in processes:
         p.join()
 
-    # Display the prefix sum result
-    print("Prefix Sum:", list(prefix))
+    # Apply correction to the result array to ensure the prefix sum is correct across chunks
+    for i in range(1, num_workers):
+        start_idx = i * chunk_size
+        if start_idx < n:
+            correction = result[start_idx - 1]
+            for j in range(start_idx, min((i + 1) * chunk_size, n)):
+                result[j] += correction
+
+    return list(result)
+
+def main():
+    # Check if the array size argument is provided
+    if len(sys.argv) != 2:
+        print(f"Usage: python {sys.argv[0]} <size_of_array>")
+        return -1
+
+    # Get the array size from execution arguments
+    try:
+        n = int(sys.argv[1])
+    except ValueError:
+        print("Array size must be an integer.")
+        return -1
+
+    # Validate input
+    if n <= 0:
+        print("Array size must be positive.")
+        return -1
+
+    # Initialize random number generator
+    random.seed(42)
+
+    # Fill the array with random numbers between 0 and 99
+    arr = [random.randint(0, 99) for _ in range(n)]
+
+    # Display the last 10 elements of the random array
+    print("Random array [last 10 elements]:")
+    print(*arr[-10:])
+
+    # Calculate prefix sum using multiprocessing
+    prefix = multiprocessing_prefix_sum(arr)
+
+    # Display the prefix sum result (last 10 elements)
+    print("Prefix Sum [last 10 elements]:")
+    print(*prefix[-10:])
+
+    return 0
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

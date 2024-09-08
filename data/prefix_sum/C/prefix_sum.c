@@ -3,7 +3,7 @@
 #include <time.h>
 
 // Function to calculate Prefix Sum
-void prefix_sum(int arr[], long prefix[], int n) {
+void prefix_sum(long arr[], long prefix[], int n) {
     prefix[0] = arr[0]; // Initialize the first element of the prefix sum
 
     // Calculate prefix sum for each element
@@ -28,27 +28,29 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    int arr[n];
+    long arr[n];
     long prefix[n];
 
     // Initialize random number generator
     srand(42);
 
-    // // Fill the array with random numbers and display it
-    // printf("Random array:\n");
+    // Fill the array with random numbers between 0 and 99 and display the last 10 elements
+    printf("Random array [last 10 elements]:\n");
     for (int i = 0; i < n; i++) {
         arr[i] = rand() % 100; // Generate random numbers between 0 and 99
-    //     printf("%d ", arr[i]);
+        if (i >= (n - 10)) {
+            printf("%ld ", arr[i]);
+        }
     }
-    // printf("\n");
+    printf("\n");
 
     // Calculate prefix sum
     prefix_sum(arr, prefix, n);
 
-    // Display the prefix sum result
+    // Display the prefix sum result (last 10 elements)
     printf("Prefix Sum [last 10 elements]:\n");
-    for (int i = n-10; i < n; i++) {
-        printf("%d ", prefix[i]);
+    for (int i = (n - 10); i < n; i++) {
+        printf("%ld ", prefix[i]);
     }
     printf("\n");
 

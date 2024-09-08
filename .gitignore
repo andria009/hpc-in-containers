@@ -1,4 +1,5 @@
 .DS_Store
 .class
 .o
+.exe
 .ipynb_checkpoints

@@ -1,32 +1,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <time.h>
 
-#define NUM_THREADS 4
+#define MAX_THREADS 4  // Define the number of threads to use
 
-// Structure to pass arguments to the thread
+long *arr;      // Input array
+long *prefix;   // Prefix sum array
+int n;          // Size of the array
+int num_threads; // Number of threads to use
+
+// Structure to hold thread arguments
 typedef struct {
-    int *arr;
-    int *prefix;
-    int start;
-    int end;
-} ThreadData;
+    int thread_id;
+    int start_idx;
+    int end_idx;
+} thread_data_t;
 
-// Function executed by each thread
-void* prefix_sum_thread(void* arg) {
-    ThreadData* data = (ThreadData*)arg;
-    int* arr = data->arr;
-    int* prefix = data->prefix;
-    int start = data->start;
-    int end = data->end;
+// Function for each thread to compute its partial prefix sum
+void *partial_prefix_sum(void *arg) {
+    thread_data_t *data = (thread_data_t *)arg;
+    int start = data->start_idx;
+    int end = data->end_idx;
 
-    // Calculate prefix sum for the section assigned to the thread
+    // Each thread computes the prefix sum for its assigned portion of the array
     for (int i = start; i < end; i++) {
-        if (i == 0) {
-            prefix[i] = arr[i]; // First element
-        } else {
-            prefix[i] = prefix[i - 1] + arr[i]; // Calculate prefix sum
-        }
+        prefix[i] = prefix[i - 1] + arr[i];
     }
 
     pthread_exit(NULL);
@@ -40,7 +39,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Get the array size from execution arguments
-    int n = atoi(argv[1]);
+    n = atoi(argv[1]);
 
     // Validate input
     if (n <= 0) {
@@ -48,51 +47,65 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    // Dynamically allocate memory for the array and prefix sum
-    int *arr = (int *)malloc(n * sizeof(int));
-    int *prefix = (int *)malloc(n * sizeof(int));
+    // Determine the number of threads (at most MAX_THREADS)
+    num_threads = (n < MAX_THREADS) ? n : MAX_THREADS;
 
-    // Generate random numbers for the array
+    // Allocate memory for the array and prefix sum
+    arr = (long *)malloc(n * sizeof(long));
+    prefix = (long *)malloc(n * sizeof(long));
+
+    // Initialize random number generator
     srand(42);
-    // printf("Random array:\n");
+
+    // Fill the array with random numbers between 0 and 99
+    printf("Random array [last 10 elements]:\n");
     for (int i = 0; i < n; i++) {
         arr[i] = rand() % 100; // Generate random numbers between 0 and 99
-    //     printf("%d ", arr[i]);
-    }
-    // printf("\n");
-
-    pthread_t threads[NUM_THREADS];
-    ThreadData thread_data[NUM_THREADS];
-    int chunk_size = n / NUM_THREADS;
-
-    // Create threads and divide tasks
-    for (int i = 0; i < NUM_THREADS; i++) {
-        thread_data[i].arr = arr;
-        thread_data[i].prefix = prefix;
-        thread_data[i].start = i * chunk_size;
-        if (i == NUM_THREADS - 1) {
-            thread_data[i].end = n; // The last thread handles the remaining elements
-        } else {
-            thread_data[i].end = (i + 1) * chunk_size;
+        if (i >= (n - 10)) {
+            printf("%ld ", arr[i]);
         }
-
-        // Create thread
-        pthread_create(&threads[i], NULL, prefix_sum_thread, (void*)&thread_data[i]);
-    }
-
-    // Wait for all threads to finish
-    for (int i = 0; i < NUM_THREADS; i++) {
-        pthread_join(threads[i], NULL);
-    }
-
-    // Display the prefix sum result
-    printf("Prefix Sum [last 10 elements]:\n");
-    for (int i = n-10; i < n; i++) {
-        printf("%d ", prefix[i]);
     }
     printf("\n");
 
-    // Free the allocated memory
+    // Initialize prefix sum with the first element
+    prefix[0] = arr[0];
+
+    // Create threads for parallel prefix sum calculation
+    pthread_t threads[MAX_THREADS];
+    thread_data_t thread_data[MAX_THREADS];
+
+    int chunk_size = n / num_threads;  // Calculate the size of each chunk
+
+    // Create the threads and assign each a chunk to work on
+    for (int i = 0; i < num_threads; i++) {
+        thread_data[i].thread_id = i;
+        thread_data[i].start_idx = (i == 0) ? 1 : i * chunk_size; // Start from 1 for the first thread
+        thread_data[i].end_idx = (i == num_threads - 1) ? n : (i + 1) * chunk_size;
+
+        pthread_create(&threads[i], NULL, partial_prefix_sum, (void *)&thread_data[i]);
+    }
+
+    // Wait for all threads to finish
+    for (int i = 0; i < num_threads; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    // Adjust the prefix sums across chunks (adding the cumulative sum from previous chunks)
+    for (int i = 1; i < num_threads; i++) {
+        long adjustment = prefix[i * chunk_size - 1];  // Get the last element from the previous chunk
+        for (int j = i * chunk_size; j < thread_data[i].end_idx; j++) {
+            prefix[j] += adjustment;
+        }
+    }
+
+    // Display the prefix sum result (last 10 elements)
+    printf("Prefix Sum [last 10 elements]:\n");
+    for (int i = (n - 10); i < n; i++) {
+        printf("%ld ", prefix[i]);
+    }
+    printf("\n");
+
+    // Free allocated memory
     free(arr);
     free(prefix);
 
