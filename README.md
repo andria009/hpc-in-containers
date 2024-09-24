@@ -23,10 +23,11 @@ Before creating your own HPC in containers, you need to have:
     ```[grid@grid1 ~]$ ssh-keyscan -t rsa,ecdsa,ed25519 example.com >> ~/.ssh/known_hosts```
 
 6. Run sample programs
+
     6.1 MPI Programming
-        - Compile
+    - Compile
         ```[grid@grid1 data]$ mpicc -o mpi_hello_world mpi_hello_world.c```
-        - Execute
+    - Execute
         ```[grid@grid1 data]$ mpirun -np 4 -hostfile hostfile mpi_hello_world```
     
     6.2 OpenMP Programming
