@@ -34,6 +34,7 @@ COPY ssh-keys/id_rsa.pub /home/grid/.ssh/id_rsa.pub
 COPY ssh-keys/id_rsa /home/grid/.ssh/id_rsa
 RUN mkdir -p /home/grid/.ssh && \
     chmod 600 /home/grid/.ssh/authorized_keys && \
+    chmod 600 /home/grid/.ssh/id_rsa && \
     chmod 700 /home/grid/.ssh && \
     chown grid:grid -R /home/grid/.ssh
 
